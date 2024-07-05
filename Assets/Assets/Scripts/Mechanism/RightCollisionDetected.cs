@@ -10,7 +10,7 @@ public class RightCollisionDetected : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            projectManager.RightCOinTouched = true;
+            projectManager.RightCoinTouched = true;
         }
 
     }

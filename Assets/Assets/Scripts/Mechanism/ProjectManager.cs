@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ProjectManager : MonoBehaviour
 {
-    [Tooltip("Dear i wrote with love for you")]
+    [Tooltip("Dear I wrote with love for you")]
     [Header("Penguin Writes")]
     [Header("Insert LeftCoin Here")]
     public GameObject[] LeftCoins;
@@ -16,8 +16,8 @@ public class ProjectManager : MonoBehaviour
     private int ActiveRightCoin;
     private GameObject currentCondition;
     public bool RestCoinActivated = false;
-    public bool LeftCOinTouched = false;
-    public bool RightCOinTouched = false;
+    public bool LeftCoinTouched = false;
+    public bool RightCoinTouched = false;
     [Header("Insert Your Conditions Here")]
     public GameObject BaseLineHand;
     public GameObject SpartialOffset;
@@ -26,19 +26,20 @@ public class ProjectManager : MonoBehaviour
     void Start()
     {
         DeactivateAllCoins();
+        StartCoroutine(InitialCoins());
     }
+
     public void DeactivateAllCoins()
     {
-        for (int i = 0; i < LeftCoins.Length; i++)
+        foreach (GameObject coin in LeftCoins)
         {
-            LeftCoins[i].SetActive(false);
+            coin.SetActive(false);
         }
-        for (int i = 0; i < RightCoins.Length; i++)
+        foreach (GameObject coin in RightCoins)
         {
-            RightCoins[i].SetActive(false);
+            coin.SetActive(false);
         }
         RestCoin.SetActive(false);
-        InitialCoins();
     }
 
     IEnumerator StartExperiment()
@@ -66,46 +67,49 @@ public class ProjectManager : MonoBehaviour
                     break;
             }
             currentCondition.SetActive(true);
-            ActiveLeftCoin = Random.Range(0, 4);
-            for (int i = 0; i < LeftCoins.Length; i++)
-            {
-                LeftCoins[ActiveLeftCoin].SetActive(true);
-            }
-
-            ActiveRightCoin = Random.Range(0, 4);
-            for (int i = 0; i < RightCoins.Length; i++)
-            {
-                RightCoins[ActiveRightCoin].SetActive(true);
-            }
-            yield return new WaitUntil(() => LeftCOinTouched && RightCOinTouched);
-            RestCoin.SetActive(true);
-            yield return new WaitUntil(() => RestCoinActivated);
-            for (int i = 0; i < LeftCoins.Length; i++)
-            {
-                LeftCoins[ActiveLeftCoin].SetActive(false);
-            }
-            for (int i = 0; i < LeftCoins.Length; i++)
-            {
-                RightCoins[ActiveLeftCoin].SetActive(false);
-            }
-            LeftCOinTouched = false;
-            RightCOinTouched = false;
+            yield return StartCoroutine(RunTrial());
+            LeftCoinTouched = false;
+            RightCoinTouched = false;
             RestCoinActivated = false;
         }
     }
 
-    private void InitialCoins()
+    IEnumerator RunTrial()
     {
-        ActiveLeftCoin = Random.Range(0, 4);
-        for (int i = 0; i < LeftCoins.Length; i++)
-        {
-            LeftCoins[ActiveLeftCoin].SetActive(true);
-        }
-        ActiveRightCoin = Random.Range(0, 4);
-        for (int i = 0; i < RightCoins.Length; i++)
-        {
-            RightCoins[ActiveRightCoin].SetActive(true);
-        }
+        ActivateRandomCoins();
+        Debug.Log("Activated Left Coin: " + ActiveLeftCoin);
+        Debug.Log("Activated Right Coin: " + ActiveRightCoin);
+        yield return new WaitUntil(() => LeftCoinTouched && RightCoinTouched);
+        Debug.Log("Both coins touched");
+        DeactivateAllCoins();
+        RestCoin.SetActive(true);
+        Debug.Log("Rest coin activated");
+        yield return new WaitUntil(() => RestCoinActivated);
+        Debug.Log("Rest coin touched");
+        RestCoin.SetActive(false);
+    }
+
+    void ActivateRandomCoins()
+    {
+        ActiveLeftCoin = Random.Range(0, LeftCoins.Length);
+        ActiveRightCoin = Random.Range(0, RightCoins.Length);
+
+        LeftCoins[ActiveLeftCoin].SetActive(true);
+        RightCoins[ActiveRightCoin].SetActive(true);
+    }
+
+    IEnumerator InitialCoins()
+    {
+        BaseLineHand.SetActive(true);
+        ActivateRandomCoins();
+        Debug.Log("Initial Coins Activated: Left - " + ActiveLeftCoin + ", Right - " + ActiveRightCoin);
+
+        yield return new WaitUntil(() => LeftCoinTouched && RightCoinTouched);
+        Debug.Log("Initial coins touched");
+
+        BaseLineHand.SetActive(false);
+        DeactivateAllCoins();
+
         StartCoroutine(StartExperiment());
     }
 }
