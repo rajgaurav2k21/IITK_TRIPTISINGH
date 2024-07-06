@@ -22,13 +22,21 @@ public class ProjectManager : MonoBehaviour
     public GameObject BaseLineHand;
     public GameObject SpartialOffset;
     public GameObject TemporalDelay;
+    [Header("UI Management")]
+    public GameObject Welcome;
+    public GameObject Rule;
+    public GameObject Feedback;
+    public bool Lighter=false;
+    public bool rules = false;
 
     void Start()
     {
         DeactivateAllCoins();
         StartCoroutine(InitialCoins());
+        Welcome.SetActive(true);
+        Rule.SetActive(false);
+        Feedback.SetActive(false);
     }
-
     public void DeactivateAllCoins()
     {
         foreach (GameObject coin in LeftCoins)
@@ -100,6 +108,11 @@ public class ProjectManager : MonoBehaviour
 
     IEnumerator InitialCoins()
     {
+        Welcome.SetActive(true);
+        yield return new WaitUntil(() =>Lighter);
+        Rule.SetActive(true);
+        yield return new WaitUntil(() =>rules);
+        Rule.SetActive(false);
         BaseLineHand.SetActive(true);
         ActivateRandomCoins();
         Debug.Log("Initial Coins Activated: Left - " + ActiveLeftCoin + ", Right - " + ActiveRightCoin);
