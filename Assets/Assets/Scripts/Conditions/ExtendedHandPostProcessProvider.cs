@@ -12,6 +12,9 @@ public class ExtendedHandProvider : PostProcessProvider
     [SerializeField]
     private float projectionFactor = 2.0f; // Multiplier to project hand further away
 
+    [SerializeField]
+    private float sideHandOffset = 0.15f; // Offset for side hands
+
     private void Start()
     {
         if (headTransform == null)
@@ -33,10 +36,13 @@ public class ExtendedHandProvider : PostProcessProvider
         // Iterate through each hand in the frame
         foreach (var hand in inputFrame.Hands)
         {
+            // Determine side hand offset
+            float sideOffset = sideHandOffset * (hand.IsLeft ? 1f : -1f);
+
             // Calculate the shoulder position
             Vector3 shoulderPos = headPos
                 + (shoulderBasis * (new Vector3(0f, -0.13f, -0.1f)
-                + Vector3.left * 0.15f * (hand.IsLeft ? 1f : -1f)));
+                + Vector3.left * sideOffset));
 
             // Calculate the vector from shoulder to hand
             Vector3 shoulderToHand = hand.PalmPosition - shoulderPos;

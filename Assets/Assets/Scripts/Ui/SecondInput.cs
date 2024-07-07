@@ -1,17 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
 public class SecondInput : MonoBehaviour
 {
-    public KeyboardInput keyboardInput;
     public TMP_InputField ageTMPInputField;
-    public welcome welcomeREff;
+    public KeyboardInput nameScript;
+    public ProjectManager projectMananger;
 
     private void Start()
     {
-        keyboardInput.enabled = false;
+        nameScript.enabled = false;
         ageTMPInputField.text = "";
     }
 
@@ -29,8 +27,7 @@ public class SecondInput : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            welcomeREff.WelcomeOver=true;
+            projectMananger.Lighter=true;
         }
     }
 }
-

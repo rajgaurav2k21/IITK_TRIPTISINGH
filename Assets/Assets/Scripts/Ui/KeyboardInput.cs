@@ -4,36 +4,34 @@ using System.Collections;
 
 public class KeyboardInput : MonoBehaviour
 {
-    public TMP_InputField nameTMPInputField;
-    public SecondInput secScript;
-    
+    public TMP_InputField userTMPInputField;
+    public SecondInput ageScript;
 
     private void Start()
     {
-        secScript.enabled = false;
-        nameTMPInputField.text = "";
-        nameTMPInputField.ActivateInputField();
-    }
-    private IEnumerator ActivateAgeInputField()
-    {
-        nameTMPInputField.DeactivateInputField();
-        yield return new WaitForEndOfFrame();
-        secScript.enabled = true;
-        secScript.ActivateAgeInputField();
+        userTMPInputField.text = "";
+        userTMPInputField.ActivateInputField();
+        ageScript.enabled = false;
     }
 
     private void Update()
     {
-        if (Input.anyKeyDown && !nameTMPInputField.isFocused)
+        if (Input.anyKeyDown && !userTMPInputField.isFocused && !ageScript.enabled)
         {
-            nameTMPInputField.ActivateInputField();
+            userTMPInputField.ActivateInputField();
         }
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            
-            secScript.enabled = true;
-            StartCoroutine(ActivateAgeInputField());
+            StartCoroutine(ActivateAgeInputFieldWithDelay());
         }
+    }
+
+    private IEnumerator ActivateAgeInputFieldWithDelay()
+    {
+        userTMPInputField.DeactivateInputField();
+        yield return new WaitForEndOfFrame();  // Wait for the end of the frame to ensure the input field is properly deactivated
+        ageScript.enabled = true;
+        ageScript.ActivateAgeInputField();
     }
 }

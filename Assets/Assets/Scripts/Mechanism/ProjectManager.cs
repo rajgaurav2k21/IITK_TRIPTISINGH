@@ -1,33 +1,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
+using System.Text;
 
 public class ProjectManager : MonoBehaviour
 {
-    [Tooltip("Dear I wrote with love for you")]
-    [Header("Penguin Writes")]
-    [Header("Insert LeftCoin Here")]
+    [Tooltip("Array of coins on the left side")]
     public GameObject[] LeftCoins;
-    [Header("Insert RightCoin Here")]
+    [Tooltip("Array of coins on the right side")]
     public GameObject[] RightCoins;
-    [Header("Insert RestCoin Here")]
+    [Tooltip("Resting coin in the middle")]
     public GameObject RestCoin;
+
     private int ActiveLeftCoin;
     private int ActiveRightCoin;
     private GameObject currentCondition;
+
     public bool RestCoinActivated = false;
     public bool LeftCoinTouched = false;
     public bool RightCoinTouched = false;
-    [Header("Insert Your Conditions Here")]
+
     public GameObject BaseLineHand;
     public GameObject SpartialOffset;
     public GameObject TemporalDelay;
-    [Header("UI Management")]
+
     public GameObject Welcome;
     public GameObject Rule;
     public GameObject Feedback;
-    public bool Lighter=false;
+
+    public bool Lighter = false;
     public bool rules = false;
+
+    private string filePath;
+    private float startTime; // To store start time of each condition
+
+    public KeyboardInput keyboardInput;
+    public SecondInput secondInput;
 
     void Start()
     {
@@ -36,7 +45,17 @@ public class ProjectManager : MonoBehaviour
         Welcome.SetActive(true);
         Rule.SetActive(false);
         Feedback.SetActive(false);
+        filePath = Application.dataPath + "/CSV/data.csv";
+        Directory.CreateDirectory(Application.dataPath + "/CSV");
+        if (!File.Exists(filePath))
+        {
+            using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            {
+                sw.WriteLine("Username,Age,Condition,Duration");
+            }
+        }
     }
+
     public void DeactivateAllCoins()
     {
         foreach (GameObject coin in LeftCoins)
@@ -47,18 +66,22 @@ public class ProjectManager : MonoBehaviour
         {
             coin.SetActive(false);
         }
-        RestCoin.SetActive(false);
+        RestCoin.SetActive(true);
     }
 
     IEnumerator StartExperiment()
     {
         string[] taskOrder = new string[] { "a", "b", "c" };
+        float endTime;
+
         foreach (string task in taskOrder)
         {
             if (currentCondition != null)
             {
                 currentCondition.SetActive(false);
             }
+            startTime = Time.time;
+
             switch (task)
             {
                 case "a":
@@ -75,11 +98,17 @@ public class ProjectManager : MonoBehaviour
                     break;
             }
             currentCondition.SetActive(true);
+
             yield return StartCoroutine(RunTrial());
+            endTime = Time.time;
+            SaveExperiment(endTime);
+
             LeftCoinTouched = false;
             RightCoinTouched = false;
             RestCoinActivated = false;
         }
+
+        Debug.Log("Experiment complete.");
     }
 
     IEnumerator RunTrial()
@@ -87,14 +116,15 @@ public class ProjectManager : MonoBehaviour
         ActivateRandomCoins();
         Debug.Log("Activated Left Coin: " + ActiveLeftCoin);
         Debug.Log("Activated Right Coin: " + ActiveRightCoin);
+
         yield return new WaitUntil(() => LeftCoinTouched && RightCoinTouched);
         Debug.Log("Both coins touched");
+
         DeactivateAllCoins();
-        RestCoin.SetActive(true);
         Debug.Log("Rest coin activated");
+
         yield return new WaitUntil(() => RestCoinActivated);
         Debug.Log("Rest coin touched");
-        RestCoin.SetActive(false);
     }
 
     void ActivateRandomCoins()
@@ -109,9 +139,10 @@ public class ProjectManager : MonoBehaviour
     IEnumerator InitialCoins()
     {
         Welcome.SetActive(true);
-        yield return new WaitUntil(() =>Lighter);
+        yield return new WaitUntil(() => Lighter);
+        Welcome.SetActive(false);
         Rule.SetActive(true);
-        yield return new WaitUntil(() =>rules);
+        yield return new WaitUntil(() => rules);
         Rule.SetActive(false);
         BaseLineHand.SetActive(true);
         ActivateRandomCoins();
@@ -124,5 +155,22 @@ public class ProjectManager : MonoBehaviour
         DeactivateAllCoins();
 
         StartCoroutine(StartExperiment());
+    }
+
+    void SaveExperiment(float endTime)
+    {
+        string username = keyboardInput.userTMPInputField.text;
+        string age = secondInput.ageTMPInputField.text;
+        string conditionName = currentCondition.name;
+        float duration = endTime - startTime;
+
+        Debug.Log("Saving experiment data...");
+        Debug.LogFormat("Username: {0}, Age: {1}, Condition: {2}, Duration: {3}", username, age, conditionName, duration);
+
+        using (StreamWriter sw = new StreamWriter(filePath, true, Encoding.UTF8))
+        {
+            string data = string.Format("{0},{1},{2},{3}", username, age, conditionName, duration);
+            sw.WriteLine(data);
+        }
     }
 }
